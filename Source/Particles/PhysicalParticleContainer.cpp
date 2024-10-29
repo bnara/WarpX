@@ -211,6 +211,11 @@ namespace
 
         idcpu[ip] = amrex::ParticleIdCpus::Invalid;
     }
+
+    inline amrex::Real Square (const amrex::Real x)
+    {
+        return amrex::Math::powi<2>(x);
+    }
 }
 
 PhysicalParticleContainer::PhysicalParticleContainer (AmrCore* amr_core, int ispecies,
@@ -676,6 +681,164 @@ PhysicalParticleContainer::AddGaussianBeam (PlasmaInjector const& plasma_injecto
                   1, attr, 0, attr_int, 1);
 }
 
+void PhysicalParticleContainer::AddTwiss (PlasmaInjector const& plasma_injector)
+{
+    const amrex::XDim3 x0 = plasma_injector.x0;
+    const amrex::Real q_tot = plasma_injector.q_tot;
+    const long npart = plasma_injector.npart;
+    const int symmetrization_order = plasma_injector.twiss_symmetrization_order;
+    const amrex::Real u0 = plasma_injector.twiss_u0;
+    const amrex::XDim3 nx = plasma_injector.twiss_nx;
+    const amrex::XDim3 ny = plasma_injector.twiss_ny;
+    const amrex::XDim3 nz = plasma_injector.twiss_nz;
+    const amrex::XDim3 focal_distance = plasma_injector.twiss_focal_distance;
+    const amrex::XDim3 sigma_x = plasma_injector.twiss_sigma_x;
+    const amrex::XDim3 sigma_u = plasma_injector.twiss_sigma_u;
+    const amrex::Real v0 = (u0 / std::sqrt(1_rt + u0*u0)) * PhysConst::c;
+    const amrex::XDim3 pcut = {
+        plasma_injector.twiss_planar_cut.x * sigma_x.x,
+        plasma_injector.twiss_planar_cut.y * sigma_x.y,
+        plasma_injector.twiss_planar_cut.z * sigma_x.z
+    };
+    const amrex::XDim3 ecut = {
+        plasma_injector.twiss_ellipsoidal_cut.x * sigma_x.x,
+        plasma_injector.twiss_ellipsoidal_cut.y * sigma_x.y,
+        plasma_injector.twiss_ellipsoidal_cut.z * sigma_x.z
+    };
+    const amrex::XDim3 delta_t {
+        focal_distance.x / v0,
+        focal_distance.y / v0,
+        focal_distance.z / v0,
+    };
+
+    // Declare temporary vectors on the CPU
+    Gpu::HostVector<ParticleReal> particle_x;
+    Gpu::HostVector<ParticleReal> particle_y;
+    Gpu::HostVector<ParticleReal> particle_z;
+    Gpu::HostVector<ParticleReal> particle_ux;
+    Gpu::HostVector<ParticleReal> particle_uy;
+    Gpu::HostVector<ParticleReal> particle_uz;
+    Gpu::HostVector<ParticleReal> particle_w;
+
+    if (ParallelDescriptor::IOProcessor()) {
+        for (long i=0; i<npart; i+=symmetrization_order) {
+#if defined(WARPX_DIM_3D) || defined(WARPX_DIM_RZ)
+            const amrex::Real weight = q_tot/(npart*charge);
+            amrex::Real x = amrex::RandomNormal(0_rt, sigma_x.x);
+            amrex::Real y = amrex::RandomNormal(0_rt, sigma_x.y);
+            amrex::Real z = amrex::RandomNormal(0_rt, sigma_x.z);
+#elif defined(WARPX_DIM_XZ)
+            const amrex::Real weight = q_tot/(npart*charge*sigma_x.y);
+            const amrex::Real x = amrex::RandomNormal(0_rt, sigma_x.x);
+            constexpr amrex::Real y = 0_rt;
+            const amrex::Real z = amrex::RandomNormal(0_rt, sigma_x.z);
+#elif defined(WARPX_DIM_1D_Z)
+            const amrex::Real weight = q_tot/(npart*charge*sigma_x.x*sigma_x.y);
+            constexpr amrex::Real x = 0_rt;
+            constexpr amrex::Real y = 0_rt;
+            amrex::Real z = amrex::RandomNormal(0_rt, sigma_x.z);
+#endif
+
+            if (std::abs(x) > pcut.x || std::abs(y) > pcut.y || std::abs(z) > pcut.z)
+                continue;
+
+            if (Square(x/ecut.x) + Square(y/ecut.y) + Square(z/ecut.z) > 1_rt)
+                continue;
+
+            const amrex::XDim3 u = plasma_injector.getMomentum(0_rt, 0_rt, 0_rt);
+            const Real gamma = std::sqrt(1_rt + (u.x*u.x + u.y*u.y + u.z*u.z));
+
+            auto doit = [&](
+                amrex::Real x, amrex::Real y, amrex::Real z,
+                amrex::Real ux, amrex::Real uy, amrex::Real uz, amrex::Real w) {
+
+                const amrex::XDim3 v {
+                    (ux / gamma) * PhysConst::c,
+                    (uy / gamma) * PhysConst::c,
+                    (uz / gamma) * PhysConst::c
+                };
+
+#if defined(WARPX_DIM_3D) || defined(WARPX_DIM_RZ)
+                x -= delta_t.x * v.x;
+                y -= delta_t.y * v.y;
+                z -= delta_t.z * (v.z - v0);
+#elif defined(WARPX_DIM_XZ)
+                x -= delta_t.x * v.x;
+                z -= delta_t.z * (v.z - v0);
+#elif defined(WARPX_DIM_1D_Z)
+                z -= delta_t.z * (v.z - v0);
+#endif
+                const amrex::XDim3 xbar {
+                    (x*nx.x + y*ny.x + z*nz.x) + x0.x,
+                    (x*nx.y + y*ny.y + z*nz.y) + x0.y,
+                    (x*nx.z + y*ny.z + z*nz.z) + x0.z
+                };
+
+                if (!(plasma_injector.insideBounds(xbar.x, xbar.y, xbar.z)))
+                    return;
+
+                const amrex::XDim3 ubar {
+                    ux*nx.x + uy*ny.x + uz*nz.x,
+                    ux*nx.y + uy*ny.y + uz*nz.y,
+                    ux*nx.z + uy*ny.z + uz*nz.z
+                };
+
+                CheckAndAddParticle(
+                    xbar.x, xbar.y, xbar.z,
+                    ubar.x*PhysConst::c, ubar.y*PhysConst::c, ubar.z*PhysConst::c, w,
+                    particle_x,  particle_y,  particle_z,
+                    particle_ux, particle_uy, particle_uz,
+                    particle_w);
+            };
+
+            // Discrete symmetries of transverse phase-space
+            switch (symmetrization_order) {
+            case 16:
+                // One-axis reflections
+                doit(-x, y, z, u.x, u.y, u.z, weight);
+                doit( x,-y, z, u.x, u.y, u.z, weight);
+                doit( x, y, z,-u.x, u.y, u.z, weight);
+                doit( x, y, z, u.x,-u.y, u.z, weight);
+                // Three-axis reflections
+                doit( x,-y, z,-u.x,-u.y, u.z, weight);
+                doit(-x, y, z,-u.x,-u.y, u.z, weight);
+                doit(-x,-y, z, u.x,-u.y, u.z, weight);
+                doit(-x,-y, z,-u.x, u.y, u.z, weight);
+            case 8:
+                // Two-axis reflections
+                doit(-x,-y, z, u.x, u.y, u.z, weight);
+                doit(-x, y, z,-u.x, u.y, u.z, weight);
+                doit(-x, y, z, u.x,-u.y, u.z, weight);
+                doit( x,-y, z,-u.x, u.y, u.z, weight);
+                doit( x,-y, z, u.x,-u.y, u.z, weight);
+                doit( x, y, z,-u.x,-u.y, u.z, weight);
+                // Four-axis reflections
+                doit(-x,-y, z,-u.x,-u.y, u.z, weight);
+            case 1:
+                // Identity
+                doit( x, y, z, u.x, u.y, u.z, weight);
+            }
+        }
+    }
+    // Add the temporary CPU vectors to the particle structure
+    auto const np = static_cast<long>(particle_z.size());
+
+    const amrex::Vector<ParticleReal> xp(particle_x.data(), particle_x.data() + np);
+    const amrex::Vector<ParticleReal> yp(particle_y.data(), particle_y.data() + np);
+    const amrex::Vector<ParticleReal> zp(particle_z.data(), particle_z.data() + np);
+    const amrex::Vector<ParticleReal> uxp(particle_ux.data(), particle_ux.data() + np);
+    const amrex::Vector<ParticleReal> uyp(particle_uy.data(), particle_uy.data() + np);
+    const amrex::Vector<ParticleReal> uzp(particle_uz.data(), particle_uz.data() + np);
+
+    amrex::Vector<amrex::Vector<ParticleReal>> attr;
+    const amrex::Vector<ParticleReal> wp(particle_w.data(), particle_w.data() + np);
+    attr.push_back(wp);
+
+    const amrex::Vector<amrex::Vector<int>> attr_int;
+
+    AddNParticles(0, np, xp,  yp,  zp, uxp, uyp, uzp, 1, attr, 0, attr_int, 1);
+}
+
 void
 PhysicalParticleContainer::AddPlasmaFromFile(PlasmaInjector & plasma_injector,
                                              ParticleReal q_tot,
@@ -907,6 +1070,10 @@ PhysicalParticleContainer::AddParticles (int lev)
 
         if (plasma_injector->gaussian_beam) {
             AddGaussianBeam(*plasma_injector);
+        }
+
+        if (plasma_injector->twiss) {
+            AddTwiss(*plasma_injector);
         }
 
         if (plasma_injector->external_file) {

@@ -115,6 +115,27 @@ public:
     bool do_focusing = false;
     amrex::Real focal_distance;
 
+    bool twiss = false;
+    amrex::XDim3 x0;
+    amrex::Real twiss_u0;
+    amrex::XDim3 twiss_nx;
+    amrex::XDim3 twiss_ny;
+    amrex::XDim3 twiss_nz;
+    amrex::XDim3 twiss_focal_distance;
+    amrex::XDim3 twiss_sigma_x;
+    amrex::XDim3 twiss_sigma_u;
+    amrex::XDim3 twiss_planar_cut = {
+        std::numeric_limits<amrex::Real>::max(),
+        std::numeric_limits<amrex::Real>::max(),
+        std::numeric_limits<amrex::Real>::max()
+    };
+    amrex::XDim3 twiss_ellipsoidal_cut = {
+        std::numeric_limits<amrex::Real>::max(),
+        std::numeric_limits<amrex::Real>::max(),
+        std::numeric_limits<amrex::Real>::max()
+    };
+    int twiss_symmetrization_order = 1;
+
     bool external_file = false; //! initialize from an openPMD file
     amrex::Real z_shift = 0.0; //! additional z offset for particle positions
 #ifdef WARPX_USE_OPENPMD
@@ -196,12 +217,16 @@ protected:
     void setupSingleParticle (amrex::ParmParse const& pp_species);
     void setupMultipleParticles (amrex::ParmParse const& pp_species);
     void setupGaussianBeam (amrex::ParmParse const& pp_species);
+    void setupTwiss (amrex::ParmParse const& pp_species);
     void setupNRandomPerCell (amrex::ParmParse const& pp_species);
     void setupNFluxPerCell (amrex::ParmParse const& pp_species);
     void setupNuniformPerCell (amrex::ParmParse const& pp_species);
     void setupExternalFile (amrex::ParmParse const& pp_species);
 
     void parseFlux (amrex::ParmParse const& pp_species);
+    void parseTwissParameters (
+        amrex::ParmParse const& pp_species, const std::string& dir,
+        amrex::Real& focal_distance, amrex::Real& sigma_x, amrex::Real& sigma_u);
 };
 
 #endif //WARPX_PLASMA_INJECTOR_H_
