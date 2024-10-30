@@ -748,7 +748,7 @@ void PhysicalParticleContainer::AddTwiss (PlasmaInjector const& plasma_injector)
             const amrex::XDim3 u = plasma_injector.getMomentum(0_rt, 0_rt, 0_rt);
             const Real gamma = std::sqrt(1_rt + (u.x*u.x + u.y*u.y + u.z*u.z));
 
-            auto doit = [&](
+            auto transform_and_push = [&](
                 amrex::Real x, amrex::Real y, amrex::Real z,
                 amrex::Real ux, amrex::Real uy, amrex::Real uz, amrex::Real w) {
 
@@ -795,28 +795,28 @@ void PhysicalParticleContainer::AddTwiss (PlasmaInjector const& plasma_injector)
             switch (symmetrization_order) {
             case 16:
                 // One-axis reflections
-                doit(-x, y, z, u.x, u.y, u.z, weight);
-                doit( x,-y, z, u.x, u.y, u.z, weight);
-                doit( x, y, z,-u.x, u.y, u.z, weight);
-                doit( x, y, z, u.x,-u.y, u.z, weight);
+                transform_and_push(-x, y, z, u.x, u.y, u.z, weight);
+                transform_and_push( x,-y, z, u.x, u.y, u.z, weight);
+                transform_and_push( x, y, z,-u.x, u.y, u.z, weight);
+                transform_and_push( x, y, z, u.x,-u.y, u.z, weight);
                 // Three-axis reflections
-                doit( x,-y, z,-u.x,-u.y, u.z, weight);
-                doit(-x, y, z,-u.x,-u.y, u.z, weight);
-                doit(-x,-y, z, u.x,-u.y, u.z, weight);
-                doit(-x,-y, z,-u.x, u.y, u.z, weight);
+                transform_and_push( x,-y, z,-u.x,-u.y, u.z, weight);
+                transform_and_push(-x, y, z,-u.x,-u.y, u.z, weight);
+                transform_and_push(-x,-y, z, u.x,-u.y, u.z, weight);
+                transform_and_push(-x,-y, z,-u.x, u.y, u.z, weight);
             case 8:
                 // Two-axis reflections
-                doit(-x,-y, z, u.x, u.y, u.z, weight);
-                doit(-x, y, z,-u.x, u.y, u.z, weight);
-                doit(-x, y, z, u.x,-u.y, u.z, weight);
-                doit( x,-y, z,-u.x, u.y, u.z, weight);
-                doit( x,-y, z, u.x,-u.y, u.z, weight);
-                doit( x, y, z,-u.x,-u.y, u.z, weight);
+                transform_and_push(-x,-y, z, u.x, u.y, u.z, weight);
+                transform_and_push(-x, y, z,-u.x, u.y, u.z, weight);
+                transform_and_push(-x, y, z, u.x,-u.y, u.z, weight);
+                transform_and_push( x,-y, z,-u.x, u.y, u.z, weight);
+                transform_and_push( x,-y, z, u.x,-u.y, u.z, weight);
+                transform_and_push( x, y, z,-u.x,-u.y, u.z, weight);
                 // Four-axis reflections
-                doit(-x,-y, z,-u.x,-u.y, u.z, weight);
+                transform_and_push(-x,-y, z,-u.x,-u.y, u.z, weight);
             case 1:
                 // Identity
-                doit( x, y, z, u.x, u.y, u.z, weight);
+                transform_and_push( x, y, z, u.x, u.y, u.z, weight);
             }
         }
     }
