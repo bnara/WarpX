@@ -759,7 +759,7 @@ void PlasmaInjector::parseTwissParameters (
             vars[TP::SIGMA_U] = vars[TP::EMITTANCE]/vars[TP::SIGMA_X];
         } else if (
             vars.count(TP::SIGMA_U) && vars.count(TP::EMITTANCE) && !vars.count(TP::SIGMA_X)) {
-            vars[TP::SIGMA_U] = vars[TP::EMITTANCE]/vars[TP::SIGMA_X];
+            vars[TP::SIGMA_X] = vars[TP::EMITTANCE]/vars[TP::SIGMA_U];
         } else if ( // gamma sigma_x^2 = emittance
             vars.count(TP::GAMMA) && vars.count(TP::SIGMA_X) && !vars.count(TP::EMITTANCE)) {
             vars[TP::EMITTANCE] = vars[TP::GAMMA]*Square(vars[TP::SIGMA_X]);
