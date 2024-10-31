@@ -723,9 +723,9 @@ void PhysicalParticleContainer::AddTwiss (PlasmaInjector const& plasma_injector)
         for (long i=0; i<npart; i+=symmetrization_order) {
 #if defined(WARPX_DIM_3D) || defined(WARPX_DIM_RZ)
             const amrex::Real weight = q_tot/(npart*charge);
-            amrex::Real x = amrex::RandomNormal(0_rt, sigma_x.x);
-            amrex::Real y = amrex::RandomNormal(0_rt, sigma_x.y);
-            amrex::Real z = amrex::RandomNormal(0_rt, sigma_x.z);
+            const amrex::Real x = amrex::RandomNormal(0_rt, sigma_x.x);
+            const amrex::Real y = amrex::RandomNormal(0_rt, sigma_x.y);
+            const amrex::Real z = amrex::RandomNormal(0_rt, sigma_x.z);
 #elif defined(WARPX_DIM_XZ)
             const amrex::Real weight = q_tot/(npart*charge*sigma_x.y);
             const amrex::Real x = amrex::RandomNormal(0_rt, sigma_x.x);
@@ -735,7 +735,7 @@ void PhysicalParticleContainer::AddTwiss (PlasmaInjector const& plasma_injector)
             const amrex::Real weight = q_tot/(npart*charge*sigma_x.x*sigma_x.y);
             constexpr amrex::Real x = 0_rt;
             constexpr amrex::Real y = 0_rt;
-            amrex::Real z = amrex::RandomNormal(0_rt, sigma_x.z);
+            const amrex::Real z = amrex::RandomNormal(0_rt, sigma_x.z);
 #endif
 
             if (std::abs(x) > pcut.x || std::abs(y) > pcut.y || std::abs(z) > pcut.z)
