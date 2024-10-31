@@ -693,7 +693,6 @@ void PhysicalParticleContainer::AddTwiss (PlasmaInjector const& plasma_injector)
     const amrex::XDim3 nz = plasma_injector.twiss_nz;
     const amrex::XDim3 focal_distance = plasma_injector.twiss_focal_distance;
     const amrex::XDim3 sigma_x = plasma_injector.twiss_sigma_x;
-    const amrex::XDim3 sigma_u = plasma_injector.twiss_sigma_u;
     const amrex::Real v0 = (u0 / std::sqrt(1_rt + u0*u0)) * PhysConst::c;
     const amrex::XDim3 pcut = {
         plasma_injector.twiss_planar_cut.x * sigma_x.x,
