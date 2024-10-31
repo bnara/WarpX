@@ -806,6 +806,7 @@ void PhysicalParticleContainer::AddTwiss (PlasmaInjector const& plasma_injector)
                 transform_and_push(-x, y, z,-u.x,-u.y, u.z);
                 transform_and_push(-x,-y, z, u.x,-u.y, u.z);
                 transform_and_push(-x,-y, z,-u.x, u.y, u.z);
+                [[fallthrough]];
             case 8:
                 // Two-axis reflections
                 transform_and_push(-x,-y, z, u.x, u.y, u.z);
@@ -816,6 +817,7 @@ void PhysicalParticleContainer::AddTwiss (PlasmaInjector const& plasma_injector)
                 transform_and_push( x, y, z,-u.x,-u.y, u.z);
                 // Four-axis reflection
                 transform_and_push(-x,-y, z,-u.x,-u.y, u.z);
+                [[fallthrough]];
             case 1:
                 // Identity
                 transform_and_push( x, y, z, u.x, u.y, u.z);
