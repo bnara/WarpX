@@ -750,7 +750,7 @@ void PhysicalParticleContainer::AddTwiss (PlasmaInjector const& plasma_injector)
             const Real gamma = std::sqrt(1_rt + (u.x*u.x + u.y*u.y + u.z*u.z));
 
             auto transform_and_push = [&](
-                amrex::Real x, amrex::Real y, amrex::Real z,
+                amrex::Real _x, amrex::Real _y, amrex::Real _z,
                 amrex::Real ux, amrex::Real uy, amrex::Real uz) {
 
                 const amrex::XDim3 v {
@@ -760,19 +760,19 @@ void PhysicalParticleContainer::AddTwiss (PlasmaInjector const& plasma_injector)
                 };
 
 #if defined(WARPX_DIM_3D) || defined(WARPX_DIM_RZ)
-                x -= delta_t.x * v.x;
-                y -= delta_t.y * v.y;
-                z -= delta_t.z * (v.z - v0);
+                _x -= delta_t.x * v.x;
+                _y -= delta_t.y * v.y;
+                _z -= delta_t.z * (v.z - v0);
 #elif defined(WARPX_DIM_XZ)
-                x -= delta_t.x * v.x;
-                z -= delta_t.z * (v.z - v0);
+                _x -= delta_t.x * v.x;
+                _z -= delta_t.z * (v.z - v0);
 #elif defined(WARPX_DIM_1D_Z)
-                z -= delta_t.z * (v.z - v0);
+                _z -= delta_t.z * (v.z - v0);
 #endif
                 const amrex::XDim3 xbar {
-                    (x*nx.x + y*ny.x + z*nz.x) + x0.x,
-                    (x*nx.y + y*ny.y + z*nz.y) + x0.y,
-                    (x*nx.z + y*ny.z + z*nz.z) + x0.z
+                    (_x*nx.x + _y*ny.x + _z*nz.x) + x0.x,
+                    (_x*nx.y + _y*ny.y + _z*nz.y) + x0.y,
+                    (_x*nx.z + _y*ny.z + _z*nz.z) + x0.z
                 };
 
                 if (!(plasma_injector.insideBounds(xbar.x, xbar.y, xbar.z))) {

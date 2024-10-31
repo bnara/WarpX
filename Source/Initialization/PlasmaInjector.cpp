@@ -697,7 +697,7 @@ void PlasmaInjector::parseFlux (amrex::ParmParse const& pp_species)
 
 void PlasmaInjector::parseTwissParameters (
     amrex::ParmParse const& pp_species, const std::string& dir,
-    amrex::Real& focal_dist, amrex::Real& sigma_x, amrex::Real& sigma_u)
+    amrex::Real& _focal_distance, amrex::Real& sigma_x, amrex::Real& sigma_u)
 {
     enum class TwissParameter {
         FOCAL_DISTANCE, SIGMA_X, SIGMA_U, EMITTANCE, ALPHA, BETA, GAMMA
@@ -775,7 +775,7 @@ void PlasmaInjector::parseTwissParameters (
         }
     }
 
-    focal_dist = vars[TP::FOCAL_DISTANCE];
+    _focal_distance = vars[TP::FOCAL_DISTANCE];
     sigma_x = vars[TP::SIGMA_X];
     sigma_u = vars[TP::SIGMA_U];
 }

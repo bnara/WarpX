@@ -226,7 +226,7 @@ protected:
     void parseFlux (amrex::ParmParse const& pp_species);
     void parseTwissParameters (
         amrex::ParmParse const& pp_species, const std::string& dir,
-        amrex::Real& focal_dist, amrex::Real& sigma_x, amrex::Real& sigma_u);
+        amrex::Real& _focal_distance, amrex::Real& sigma_x, amrex::Real& sigma_u);
 };
 
 #endif //WARPX_PLASMA_INJECTOR_H_
