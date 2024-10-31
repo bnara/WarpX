@@ -738,11 +738,13 @@ void PhysicalParticleContainer::AddTwiss (PlasmaInjector const& plasma_injector)
             const amrex::Real z = amrex::RandomNormal(0_rt, sigma_x.z);
 #endif
 
-            if (std::abs(x) > pcut.x || std::abs(y) > pcut.y || std::abs(z) > pcut.z)
+            if (std::abs(x) > pcut.x || std::abs(y) > pcut.y || std::abs(z) > pcut.z) {
                 continue;
+            }
 
-            if (Square(x/ecut.x) + Square(y/ecut.y) + Square(z/ecut.z) > 1_rt)
+            if (Square(x/ecut.x) + Square(y/ecut.y) + Square(z/ecut.z) > 1_rt) {
                 continue;
+            }
 
             const amrex::XDim3 u = plasma_injector.getMomentum(0_rt, 0_rt, 0_rt);
             const Real gamma = std::sqrt(1_rt + (u.x*u.x + u.y*u.y + u.z*u.z));
@@ -773,8 +775,9 @@ void PhysicalParticleContainer::AddTwiss (PlasmaInjector const& plasma_injector)
                     (x*nx.z + y*ny.z + z*nz.z) + x0.z
                 };
 
-                if (!(plasma_injector.insideBounds(xbar.x, xbar.y, xbar.z)))
+                if (!(plasma_injector.insideBounds(xbar.x, xbar.y, xbar.z))) {
                     return;
+                }
 
                 const amrex::XDim3 ubar {
                     ux*nx.x + uy*ny.x + uz*nz.x,
