@@ -769,6 +769,7 @@ mu0      vacuum permeability
 clight   speed of light
 kb       Boltzmann's constant (J/K)
 pi       math constant pi
+inf      maximum finite value of type ``amrex::Real``
 ======== ===================
 
 See ``Source/Utils/WarpXConst.H`` for the values.

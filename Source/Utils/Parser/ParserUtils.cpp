@@ -159,6 +159,7 @@ amrex::Parser utils::parser::makeParser (
        {"m_u", PhysConst::m_u},
        {"kb", PhysConst::kb},
        {"pi", MathConst::pi},
+       {"inf", std::numeric_limits<amrex::Real>::max()}
       };
 
     for (auto it = symbols.begin(); it != symbols.end(); ) {
