@@ -331,14 +331,45 @@ void PlasmaInjector::setupTwiss (amrex::ParmParse const& pp_species)
         twiss_u0 > 0_rt, "twiss.u0 must be positive");
 
     amrex::Vector<amrex::Real> temp;
-    utils::parser::getArrWithParser(pp_species, source_name, "twiss.nz", temp, 0, 3);
-    twiss_nz = Normalize({temp[0], temp[1], temp[2]});
-    utils::parser::getArrWithParser(pp_species, source_name, "twiss.nx", temp, 0, 3);
-    WARPX_ALWAYS_ASSERT_WITH_MESSAGE(
-        Norm(CrossProduct(twiss_nz, amrex::XDim3{temp[0], temp[1], temp[2]})) > 0_rt,
-        "twiss.nz and twiss.nx must not be parallel");
-    twiss_nx = Normalize(Projection(amrex::XDim3{temp[0], temp[1], temp[2]}, twiss_nz));
-    twiss_ny = CrossProduct(twiss_nz, twiss_nx);
+    if (pp_species.contains("twiss.euler")) {
+        utils::parser::getArrWithParser(pp_species, source_name, "twiss.euler", temp, 0, 3);
+        const amrex::Real ca = std::cos(temp[0]), sa = std::sin(temp[0]);
+        const amrex::Real cb = std::cos(temp[1]), sb = std::sin(temp[1]);
+        const amrex::Real cg = std::cos(temp[2]), sg = std::sin(temp[2]);
+        twiss_nx = {
+            ca*cg - cb*sa*sg,
+            cg*sa + ca*cb*sg,
+            sb*sg
+        };
+        twiss_ny = {
+            -ca*sg - cb*cg*sa,
+            ca*cb*cg - sa*sg,
+            cg*sb
+        };
+        twiss_nz = {
+            sa*sb,
+            -ca*sb,
+            cb
+        };
+    } else {
+        if (pp_species.contains("twiss.nz")) {
+            utils::parser::getArrWithParser(pp_species, source_name, "twiss.nz", temp, 0, 3);
+            twiss_nz = Normalize({temp[0], temp[1], temp[2]});
+        } else {
+            twiss_nz = { 0_rt, 0_rt, 1_rt };
+        }
+        if (pp_species.contains("twiss.nx")) {
+            utils::parser::getArrWithParser(pp_species, source_name, "twiss.nx", temp, 0, 3);
+            twiss_nx = Normalize({temp[0], temp[1], temp[2]});
+        } else {
+            twiss_nx = { 1_rt, 0_rt, 0_rt };
+        }
+        WARPX_ALWAYS_ASSERT_WITH_MESSAGE(
+            Norm(CrossProduct(twiss_nz, twiss_nx)) > 0_rt,
+            "twiss.nz and twiss.nx must not be parallel");
+        twiss_nx = Normalize(Projection(twiss_nx, twiss_nz));
+        twiss_ny = CrossProduct(twiss_nz, twiss_nx);
+    }
 
     parseTwissParameters(
         pp_species, "x", twiss_focal_distance.x, twiss_sigma_x.x, twiss_sigma_u.x);

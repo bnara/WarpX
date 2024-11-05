@@ -1006,9 +1006,17 @@ Particle initialization
 
       * ``<species_name>.twiss.u0`` (`float`) Mean normalized particle momentum :math:`u_0 = \beta_0 \gamma_0 > 0`.
 
-      * ``<species_name>.twiss.nz`` (list of 3 `floats`) Longitudinal beam direction :math:`\mathbf{\hat{n}}_z`.
+      * ``<species_name>.twiss.nz`` (list of 3 `floats`, default: `0 0 1`) Longitudinal beam direction :math:`\mathbf{\hat{n}}_z`.
 
-      * ``<species_name>.twiss.nx`` (list of 3 `floats`) Transverse beam direction :math:`\mathbf{\hat{n}}_x`.  In the code, this is projected into the plane perpendicular to :math:`\mathbf{\hat{n}}_z`, so that we only require :math:`\mathbf{\hat{n}}_z` and :math:`\mathbf{\hat{n}}_x` not be parallel.  Both unit vectors are then normalized and used to calculate :math:`\mathbf{\hat{n}}_y = \mathbf{\hat{n}}_z \times \mathbf{\hat{n}}_x`.
+      * ``<species_name>.twiss.nx`` (list of 3 `floats`, default: `1 0 0`) Transverse beam direction :math:`\mathbf{\hat{n}}_x`.  In the code, this is projected into the plane perpendicular to :math:`\mathbf{\hat{n}}_z`, so that we only require :math:`\mathbf{\hat{n}}_z` and :math:`\mathbf{\hat{n}}_x` not be parallel.  Both unit vectors are then normalized and used to calculate :math:`\mathbf{\hat{n}}_y = \mathbf{\hat{n}}_z \times \mathbf{\hat{n}}_x`.
+
+      * ``<species_name>.twiss.euler`` (list of 3 `floats`, optional) If given, provides an alternative way to specify :math:`\mathbf{\hat{n}}_z` and :math:`\mathbf{\hat{n}}_x` in terms of an intrinsic :math:`Z\text{-}X\text{-}Z` Euler rotation.  Parameters are:
+
+        * :math:`\mathbf{\alpha}` = right-handed rotation about :math:`\mathbf{\hat{z}}`
+
+        * :math:`\mathbf{\beta}` = right-handed rotation about :math:`\mathbf{\hat{x}}'`
+
+        * :math:`\mathbf{\gamma}` = right-handed rotation about :math:`\mathbf{\hat{z}}''`
 
       * ``<species_name>.twiss.symmetrization_order`` (`int`, default=1) Symmetrization of 4D uncorrelated transverse phase-space.  Allowed values:
 
