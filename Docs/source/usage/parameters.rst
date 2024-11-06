@@ -989,21 +989,33 @@ Particle initialization
 
       * ``<species_name>.x0/y0/z0`` (`float`, meter) Initial beam position :math:`\mathbf{x}_0`.
 
-      * ``<species_name>.twiss.planar_cut_x/y/zeta`` (`float`, optional)  Cut particles with
+      * ``<species_name>.twiss.ellipsoidal_cut`` (list of 6 `floats`, optional) Cut particles with
 
         .. math::
-           |x| > a_x ~~\text{or}~~ |y| > a_y ~~\text{or}~~ |\zeta| > a_\zeta.
+           \Biggl[ \left(
+           \frac{x}{a_1} \right)^2 +
+           \left( \frac{y}{a_2} \right)^2 +
+           \left( \frac{\zeta}{a_3} \right)^2 +
+           \left( \frac{u_x}{a_4} \right)^2 +
+           \left( \frac{u_y}{a_5} \right)^2 +
+           \left( \frac{u_\zeta}{a_6} \right)^2 \Biggr] > 1
 
-        The charge of the uncut beam is ``<species_name>.q_tot``, so that cutting the distribution generally results in lower total injected charge.  Specify :math:`a_i` in units of :math:`\sigma_{x_i}`.
+        Parameters:
 
-      * ``<species_name>.twiss.ellipsoidal_cut_x/y/zeta`` (`float`, optional) Cut particles with
+        * :math:`(a_1, a_2, a_3, a_4, a_5, a_6)` in units of :math:`(\sigma^\star_x, \sigma^\star_y, \sigma^\star_\zeta, \sigma^\star_{u_x}, \sigma^\star_{u_y}, \sigma^\star_{u_\zeta})`
+
+        The charge of the uncut beam is ``<species_name>.q_tot``, so that cutting the distribution generally results in lower total injected charge.  Specifying ``inf`` for any parameter disables the corresponding cut.
+
+      * ``<species_name>.twiss.planar_cut`` (list of 6 `floats`, optional)  Cut particles with
 
         .. math::
-           \left( \frac{x}{a_x} \right)^2
-           + \left( \frac{y}{a_y} \right)^2
-           + \left( \frac{\zeta}{a_\zeta} \right)^2 > 1
+           \max \Biggl ( \frac{|x|}{a_1}, \frac{|y|}{a_2}, \frac{|\zeta|}{a_3}, \frac{|u_x|}{a_4},  \frac{|u_y|}{a_5}, \frac{|u_\zeta|}{a_6} \Biggr) > 1
 
-        The charge of the uncut beam is ``<species_name>.q_tot``, so that cutting the distribution generally results in lower total injected charge.  Specify :math:`a_i` in units of :math:`\sigma_{x_i}`.
+        Parameters:
+
+        * :math:`(a_1, a_2, a_3, a_4, a_5, a_6)` in units of :math:`(\sigma^\star_x, \sigma^\star_y, \sigma^\star_\zeta, \sigma^\star_{u_x}, \sigma^\star_{u_y}, \sigma^\star_{u_\zeta})`
+
+        The charge of the uncut beam is ``<species_name>.q_tot``, so that cutting the distribution generally results in lower total injected charge.  Specifying ``inf`` for any parameter disables the corresponding cut.
 
       * ``<species_name>.twiss.u0`` (`float`) Mean normalized particle momentum :math:`u_0 = \beta_0 \gamma_0 > 0`.
 

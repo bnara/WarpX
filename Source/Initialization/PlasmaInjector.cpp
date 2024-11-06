@@ -312,19 +312,19 @@ void PlasmaInjector::setupTwiss (amrex::ParmParse const& pp_species)
     utils::parser::getWithParser(pp_species, source_name, "q_tot", q_tot);
     utils::parser::getWithParser(pp_species, source_name, "npart", npart);
 
-    utils::parser::queryWithParser(
-        pp_species, source_name, "twiss.planar_cut_x", twiss_planar_cut.x);
-    utils::parser::queryWithParser(
-        pp_species, source_name, "twiss.planar_cut_y", twiss_planar_cut.y);
-    utils::parser::queryWithParser(
-        pp_species, source_name, "twiss.planar_cut_zeta", twiss_planar_cut.z);
+    if (pp_species.contains("twiss.planar_cut")) {
+        utils::parser::getArrWithParser(
+            pp_species, source_name, "twiss.planar_cut", twiss_planar_cut, 0, 6);
+    } else {
+        twiss_planar_cut.resize(6, std::numeric_limits<amrex::Real>::max());
+    }
 
-    utils::parser::queryWithParser(
-        pp_species, source_name, "twiss.ellipsoidal_cut_x", twiss_ellipsoidal_cut.x);
-    utils::parser::queryWithParser(
-        pp_species, source_name, "twiss.ellipsoidal_cut_y", twiss_ellipsoidal_cut.y);
-    utils::parser::queryWithParser(
-        pp_species, source_name, "twiss.ellipsoidal_cut_zeta", twiss_ellipsoidal_cut.z);
+    if (pp_species.contains("twiss.ellipsoidal_cut")) {
+        utils::parser::getArrWithParser(
+            pp_species, source_name, "twiss.ellipsoidal_cut", twiss_ellipsoidal_cut, 0, 6);
+    } else {
+        twiss_ellipsoidal_cut.resize(6, std::numeric_limits<amrex::Real>::max());
+    }
 
     utils::parser::getWithParser(pp_species, source_name, "twiss.u0", twiss_u0);
     WARPX_ALWAYS_ASSERT_WITH_MESSAGE(

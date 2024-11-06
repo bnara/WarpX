@@ -124,16 +124,8 @@ public:
     amrex::XDim3 twiss_focal_distance;
     amrex::XDim3 twiss_sigma_x;
     amrex::XDim3 twiss_sigma_u;
-    amrex::XDim3 twiss_planar_cut = {
-        std::numeric_limits<amrex::Real>::max(),
-        std::numeric_limits<amrex::Real>::max(),
-        std::numeric_limits<amrex::Real>::max()
-    };
-    amrex::XDim3 twiss_ellipsoidal_cut = {
-        std::numeric_limits<amrex::Real>::max(),
-        std::numeric_limits<amrex::Real>::max(),
-        std::numeric_limits<amrex::Real>::max()
-    };
+    amrex::Vector<amrex::Real> twiss_planar_cut;
+    amrex::Vector<amrex::Real> twiss_ellipsoidal_cut;
     int twiss_symmetrization_order = 1;
 
     bool external_file = false; //! initialize from an openPMD file

@@ -693,16 +693,23 @@ void PhysicalParticleContainer::AddTwiss (PlasmaInjector const& plasma_injector)
     const amrex::XDim3 nz = plasma_injector.twiss_nz;
     const amrex::XDim3 focal_distance = plasma_injector.twiss_focal_distance;
     const amrex::XDim3 sigma_x = plasma_injector.twiss_sigma_x;
+    const amrex::XDim3 sigma_u = plasma_injector.twiss_sigma_u;
     const amrex::Real v0 = (u0 / std::sqrt(1_rt + u0*u0)) * PhysConst::c;
-    const amrex::XDim3 pcut = {
-        plasma_injector.twiss_planar_cut.x * sigma_x.x,
-        plasma_injector.twiss_planar_cut.y * sigma_x.y,
-        plasma_injector.twiss_planar_cut.z * sigma_x.z
+    const amrex::Vector<amrex::Real> pcut = {
+        plasma_injector.twiss_planar_cut[0] * sigma_x.x,
+        plasma_injector.twiss_planar_cut[1] * sigma_x.y,
+        plasma_injector.twiss_planar_cut[2] * sigma_x.z,
+        plasma_injector.twiss_planar_cut[3] * sigma_u.x,
+        plasma_injector.twiss_planar_cut[4] * sigma_u.y,
+        plasma_injector.twiss_planar_cut[5] * sigma_u.z
     };
-    const amrex::XDim3 ecut = {
-        plasma_injector.twiss_ellipsoidal_cut.x * sigma_x.x,
-        plasma_injector.twiss_ellipsoidal_cut.y * sigma_x.y,
-        plasma_injector.twiss_ellipsoidal_cut.z * sigma_x.z
+    const amrex::Vector<amrex::Real> ecut = {
+        plasma_injector.twiss_ellipsoidal_cut[0] * sigma_x.x,
+        plasma_injector.twiss_ellipsoidal_cut[1] * sigma_x.y,
+        plasma_injector.twiss_ellipsoidal_cut[2] * sigma_x.z,
+        plasma_injector.twiss_ellipsoidal_cut[3] * sigma_u.x,
+        plasma_injector.twiss_ellipsoidal_cut[4] * sigma_u.y,
+        plasma_injector.twiss_ellipsoidal_cut[5] * sigma_u.z
     };
     const amrex::XDim3 delta_t {
         focal_distance.x / v0,
@@ -737,16 +744,18 @@ void PhysicalParticleContainer::AddTwiss (PlasmaInjector const& plasma_injector)
             constexpr amrex::Real y = 0_rt;
             const amrex::Real z = amrex::RandomNormal(0_rt, sigma_x.z);
 #endif
-
-            if (std::abs(x) > pcut.x || std::abs(y) > pcut.y || std::abs(z) > pcut.z) {
-                continue;
-            }
-
-            if (Square(x/ecut.x) + Square(y/ecut.y) + Square(z/ecut.z) > 1_rt) {
-                continue;
-            }
-
             const amrex::XDim3 u = plasma_injector.getMomentum(0_rt, 0_rt, 0_rt);
+
+            if (std::abs(x) > pcut[0] || std::abs(y) > pcut[1] || std::abs(z) > pcut[2] ||
+                std::abs(u.x) > pcut[3] || std::abs(u.y) > pcut[4] || std::abs(u.z) > pcut[5]) {
+                continue;
+            }
+
+            if (Square(x/ecut[0]) + Square(y/ecut[1]) + Square(z/ecut[2]) +
+                Square(u.x/ecut[3]) + Square(u.y/ecut[4]) + Square((u.z-u0)/ecut[5]) > 1_rt) {
+                continue;
+            }
+
             const Real gamma = std::sqrt(1_rt + (u.x*u.x + u.y*u.y + u.z*u.z));
 
             auto transform_and_push = [&](
