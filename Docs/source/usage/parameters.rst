@@ -1011,7 +1011,7 @@ Particle initialization
 
       * ``<species_name>.twiss.nx`` (list of 3 `floats`, default: `1 0 0`) Transverse beam direction :math:`\mathbf{\hat{n}}_x`.  In the code, this is projected into the plane perpendicular to :math:`\mathbf{\hat{n}}_z`, so that we only require :math:`\mathbf{\hat{n}}_z` and :math:`\mathbf{\hat{n}}_x` not be parallel.  Both unit vectors are then normalized and used to calculate :math:`\mathbf{\hat{n}}_y = \mathbf{\hat{n}}_z \times \mathbf{\hat{n}}_x`.
 
-      * ``<species_name>.twiss.euler`` (list of 3 `floats`, optional) If given, provides an alternative way to specify :math:`\mathbf{\hat{n}}_z` and :math:`\mathbf{\hat{n}}_x` in terms of an intrinsic :math:`Z\text{-}X\text{-}Z` Euler rotation.  Parameters are:
+      * ``<species_name>.twiss.euler`` (list of 3 `floats`, radian, optional) If given, provides an alternative way to specify :math:`\mathbf{\hat{n}}_z` and :math:`\mathbf{\hat{n}}_x` in terms of an intrinsic :math:`Z\text{-}X\text{-}Z` Euler rotation.  Parameters are:
 
         * :math:`\mathbf{\alpha}` = right-handed rotation about :math:`\mathbf{\hat{z}}`
 
