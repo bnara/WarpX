@@ -1055,7 +1055,7 @@ Particle initialization
              (x,u_x;y,u_y) \mapsto
              & (-x,u_x;y,u_y), (x,-u_x;y,u_y), (x,u_x;-y,u_y), \\
              & (x,u_x;y,-u_y), (x,-u_x;-y,-u_y), (-x,u_x;-y,-u_y) \\
-             & (-x,-u_x;y,-u_y), (-x,-u_x;y,u_y)
+             & (-x,-u_x;y,-u_y), (-x,-u_x;-y,u_y)
              \end{align*}
 
       Each of the three bivariate distributions is separately specified by three of the following parameters:
