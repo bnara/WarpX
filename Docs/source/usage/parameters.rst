@@ -1044,7 +1044,7 @@ Particle initialization
              \begin{align*}
              (x,u_x;y,u_y) \mapsto
                & (-x,-u_x;y,u_y), (-x,u_x;-y,u_y), (-x,u_x;y,-u_y), \\
-               &  (x,-u_x;-y,u_y), (x,-u_x;y,-u_y), (x,u_x;-y,-u_y) \\
+               &  (x,-u_x;-y,u_y), (x,-u_x;y,-u_y), (x,u_x;-y,-u_y), \\
                &  (-x,-u_x;-y,-u_y)
              \end{align*}
 
@@ -1054,7 +1054,7 @@ Particle initialization
              \begin{align*}
              (x,u_x;y,u_y) \mapsto
              & (-x,u_x;y,u_y), (x,-u_x;y,u_y), (x,u_x;-y,u_y), \\
-             & (x,u_x;y,-u_y), (x,-u_x;-y,-u_y), (-x,u_x;-y,-u_y) \\
+             & (x,u_x;y,-u_y), (x,-u_x;-y,-u_y), (-x,u_x;-y,-u_y), \\
              & (-x,-u_x;y,-u_y), (-x,-u_x;-y,u_y)
              \end{align*}
 
