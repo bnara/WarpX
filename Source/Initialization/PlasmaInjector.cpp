@@ -762,9 +762,16 @@ void PlasmaInjector::parseTwissParameters (
         vars.size() == 3,
         std::string("Must provide exactly 3 Twiss parameters (dir=") + dir + ")");
 
+    // dispersion of transverse velocity with respect to transverse momentum
+    amrex::Real eta = 1_rt;
+    if (dir == "zeta") {
+        // dispersion of longitudinal velocity with respect to longitudinal momentum
+        const amrex::Real gamma0 = std::sqrt(1_rt + Square(twiss_u0));
+        eta = 1_rt/Square(gamma0);
+    }
+
     while (
         vars.count(TP::FOCAL_DISTANCE) + vars.count(TP::SIGMA_X) + vars.count(TP::SIGMA_U) < 3) {
-
         if ( // beta gamma = 1 + alpha^2
             vars.count(TP::BETA) && vars.count(TP::ALPHA) && !vars.count(TP::GAMMA)) {
             vars[TP::GAMMA] = (1_rt + Square(vars[TP::ALPHA]))/vars[TP::BETA];
@@ -774,15 +781,15 @@ void PlasmaInjector::parseTwissParameters (
         } else if (
             vars.count(TP::ALPHA) && vars.count(TP::GAMMA) && !vars.count(TP::BETA)) {
             vars[TP::BETA] = (1_rt+Square(vars[TP::ALPHA]))/vars[TP::GAMMA];
-        } else if ( // alpha = L gamma
+        } else if ( // alpha = eta L gamma / u0
             vars.count(TP::ALPHA) && vars.count(TP::FOCAL_DISTANCE) && !vars.count(TP::GAMMA)) {
-            vars[TP::GAMMA] = vars[TP::ALPHA] / vars[TP::FOCAL_DISTANCE];
+            vars[TP::GAMMA] = twiss_u0 * vars[TP::ALPHA] / (eta * vars[TP::FOCAL_DISTANCE]);
         } else if (
             vars.count(TP::GAMMA) && vars.count(TP::ALPHA) && !vars.count(TP::FOCAL_DISTANCE)) {
-            vars[TP::FOCAL_DISTANCE] = vars[TP::ALPHA] / vars[TP::GAMMA];
+            vars[TP::FOCAL_DISTANCE] = twiss_u0 * vars[TP::ALPHA] / (eta * vars[TP::GAMMA]);
         } else if (
             vars.count(TP::FOCAL_DISTANCE) && vars.count(TP::GAMMA) && !vars.count(TP::ALPHA)) {
-            vars[TP::ALPHA] = vars[TP::FOCAL_DISTANCE] * vars[TP::GAMMA];
+            vars[TP::ALPHA] = eta * vars[TP::FOCAL_DISTANCE] * vars[TP::GAMMA] / twiss_u0;
         } else if ( // sigma_x sigma_u = emittance
             vars.count(TP::SIGMA_X) && vars.count(TP::SIGMA_U) && !vars.count(TP::EMITTANCE)) {
             vars[TP::EMITTANCE] = vars[TP::SIGMA_X]*vars[TP::SIGMA_U];
