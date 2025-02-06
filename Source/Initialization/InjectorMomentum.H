@@ -124,8 +124,8 @@ struct InjectorMomentumTwiss
     }
 
 private:
-    const amrex::Real m_u0;
-    const amrex::XDim3 m_sigma_u;
+    amrex::Real m_u0;
+    amrex::XDim3 m_sigma_u;
 };
 
 // struct whose getMomentum returns momentum for 1 particle, from random
