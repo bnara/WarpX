@@ -397,13 +397,37 @@ void FieldProbe::ComputeDiags (int step)
         // Calculates particle movement in moving window sims
         amrex::Real move_dist = 0.0;
         bool const update_particles_moving_window =
-            do_moving_window_FP &&
-            step > WarpX::start_moving_window_step &&
-            step <= WarpX::end_moving_window_step;
-        if (update_particles_moving_window)
-        {
+            do_moving_window_FP && WarpX::moving_window_active(step);
+        if (update_particles_moving_window) {
             const int step_diff = step - m_last_compute_step;
             move_dist = dt*WarpX::moving_window_v*step_diff;
+            // WarpXMovingWindow.cpp
+            // 1D: dir=0 is z
+            // 2D: dir=0 is x, dir=1 is z
+            // 3D: dir=0 is x, dir=1 is y, dir=2 is z
+            switch (WarpX::moving_window_dir) {
+#if defined(WARPX_DIM_1D_Z)
+            case 0:
+                z_probe += move_dist;
+                break;
+#elif defined(WARPX_DIM_XZ)
+            case 0:
+                x_probe += move_dist;
+                break;
+            case 1:
+                z_probe += move_dist;
+                break;
+#elif defined(WARPX_DIM_3D)
+            case 0:
+                x_probe += move_dist;
+                break;
+            case 1:
+                y_probe += move_dist;
+                break;
+            case 2:
+                z_probe += move_dist;
+#endif
+            }
         }
 
         // get MultiFab data at lev
@@ -456,20 +480,29 @@ void FieldProbe::ComputeDiags (int step)
                 {
                     amrex::ParticleReal xp, yp, zp;
                     getPosition(ip, xp, yp, zp);
-                    if (temp_warpx_moving_window == 0)
-                    {
-                        setPosition(ip, xp+move_dist, yp, zp);
-                    }
-                    if (temp_warpx_moving_window == 1)
-                    {
-                        setPosition(ip, xp, yp+move_dist, zp);
-                    }
-#if defined(WARPX_ZINDEX)
-                    if (temp_warpx_moving_window == WARPX_ZINDEX)
-                    {
+                    switch (temp_warpx_moving_window) {
+#if defined(WARPX_DIM_1D_Z)
+                    case 0:
                         setPosition(ip, xp, yp, zp+move_dist);
-                    }
+                        break;
+#elif defined(WARPX_DIM_XZ)
+                    case 0:
+                        setPosition(ip, xp+move_dist, yp, zp);
+                        break;
+                    case 1:
+                        setPosition(ip, xp, yp, zp+move_dist);
+                        break;
+#elif defined(WARPX_DIM_3D)
+                    case 0:
+                        setPosition(ip, xp+move_dist, yp, zp);
+                        break;
+                    case 1:
+                        setPosition(ip, xp, yp+move_dist, zp);
+                        break;
+                    case 2:
+                        setPosition(ip, xp, yp, zp+move_dist);
 #endif
+                    }
                 });
             }
             if( ProbeInDomain() )
